@@ -5,18 +5,71 @@ const transcription = document.getElementById("transcription");
 // Browser's audio recorder
 let mediaRecorder;
 // Store audio 
-let audioArray = [];
+let audioArrays = [];
 
 startButton.addEventListener("click", async() => {
 	try {
 		// Ask browser for microphone access
-		const stream = navigator.mediaDevices.getUserMedia({
+		const stream = await navigator.mediaDevices.getUserMedia({
 		    audio: true
 		});
+		// Clear audio array
+		audioArrays = [];
+		
+		// Use microphone stream for recorder
+		mediaRecorder = new MediaRecorder(stream);
+		// Record audio
+		mediaRecorder.addEventListener("dataavailable", event => {
+			audioArrays.push(event.data);
+		})
+		
+		// When audio stop
+		mediaRecorder.addEventListener("stop", () => {
+			const combinedAudio = new Blob(
+				audioArrays,
+				{
+					type: mediaRecorder.mimeType
+				}
+			);
+			console.log("Recording stopped.");
+			console.log("Audio size: ", combinedAudio.size);
+			//Update statusText
+			statusText.innerText = "Recording stopped."
+			//Update button status
+			startButton.disabled = false;
+			stopButton.disabled = true;
+		})
+		// Start recording
+		mediaRecorder.start();
+		// Update statusText
+		statusText.innerText = "Recording...";
+		
+		// Update button status
+		startButton.disabled = true;
+		stopButton.disabled = false;
 		
 		console.log("Microphone access granted!");
+		
+		
+		
 	} catch(error){
 		console.log("Microphone access denied: ", error);
 		statusText.innerText = "Microphone inaccessible";
+	}
+})
+
+stopButton.addEventListener("click", async() => {
+	//stop if media recorder is running
+	if (
+	    mediaRecorder &&
+	    mediaRecorder.state === "recording"
+	) {
+
+	    mediaRecorder.stop();
+
+	    statusText.innerText =
+	        "Processing recording...";
+
+	    stopButton.disabled = true;
 	}
 })
