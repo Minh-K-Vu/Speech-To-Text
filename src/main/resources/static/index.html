@@ -6,8 +6,14 @@
     <title>Speech to Text</title>
 </head>
 <body>
-    <h1>Convert Speech to Text</h1>
-    <p>Start Recording Your Voice</p>
-    <button>Start Recording</button>
+    <h1>Convert Your Speech to Text</h1>
+    <p id="status">Start Recording Your Voice</p>
+    <button id="startButton">Start Recording</button>
+	<button id="stopButton" disabled>
+	    Stop Recording
+	</button>
+	<h2>Transcription:</h2>
+	<p id="transcription-text">Transcription Output....</p>
+	<script src="app.js"></script>
 </body>
 </html>
