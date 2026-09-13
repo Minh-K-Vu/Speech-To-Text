@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+//Add Mono to handle asynchronous
+import reactor.core.publisher.Mono;
 @RestController
 //Base URL
 @RequestMapping("/api/speechtotext")
@@ -26,7 +28,7 @@ public class TranscriptionController {
     }
     //Post request to handle transcription
     @PostMapping(value = "/transcribe", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> transcribe(@RequestPart("file") MultipartFile file) {
+    public Mono <ResponseEntity<String>> transcribe(@RequestPart("file") MultipartFile file) {
     	System.out.println("Transcribe endpoint called");
 
         System.out.println(
@@ -40,13 +42,10 @@ public class TranscriptionController {
         System.out.println(
             "File size: " + file.getSize()
         );
-        //Pass file to transciptionServie
-        String transcription = transcriptionService.transcribe(file);
-        
-        return ResponseEntity.ok(
-            transcription
-        );
-        
+        //Pass file to transciptionServie and return Mono.
+        return transcriptionService
+        		.transcribe(file)
+        		.map(transcription -> ResponseEntity.ok(transcription));
     }
     		
 }

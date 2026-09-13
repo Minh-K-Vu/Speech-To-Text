@@ -4,7 +4,11 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+//import org.springframework.web.client.RestClient;
+//Replace RestClient with WebClient to allow asynchronous HTTP calls.
+import org.springframework.web.reactive.function.client.WebClient;
+//Use Mono for asynchronous
+import reactor.core.publisher.Mono;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
@@ -18,12 +22,12 @@ import com.example.speechtotext.dto.OpenAIResponse;
 @Service
 public class TranscriptionService {
 	
-	private RestClient restClient;
+	private WebClient webClient;
 	private TokenTracker tokenTracker;
 	
 	public TranscriptionService(
 			//Let Spring construct RestClient
-            RestClient.Builder restClientBuilder,
+            WebClient.Builder restClientBuilder,
             //Read openai.api-key and store in apiKey
             @Value("${openai.api-key}") String apiKey,
             //Read openai.base-url and store in baseUrl
@@ -37,7 +41,7 @@ public class TranscriptionService {
 		//all requests will have header:
 		//Authorization, Bearer + apiKey
 		
-        restClient = restClientBuilder
+        webClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .defaultHeader(
                         "Authorization",
@@ -49,7 +53,7 @@ public class TranscriptionService {
 	
 	
 	// Get a file as input, post request to OpenAi and return OpenAi response
-	public String transcribe(MultipartFile file) {
+	public Mono<String> transcribe(MultipartFile file) {
 		try {
 			//Convert file into a resource. RestClient can work with resource.
 			ByteArrayResource audioResource =
@@ -80,33 +84,41 @@ public class TranscriptionService {
 	                "gpt-4o-mini-transcribe"
 	        );
 	        //Post request to send to OpenAi
-	        OpenAIResponse response = restClient.post()
+	        return webClient.post()
                     .uri("/v1/audio/transcriptions") //URL request
                     .contentType(
                             MediaType.MULTIPART_FORM_DATA //set content being sent to multipart form data which support multivaluemap
                     )
                     //body request
-                    .body(requestBody)
+                    .bodyValue(requestBody)
                     .retrieve() // get the response
-                    .body(
-                            OpenAIResponse.class
-                    );
-	        if (response == null) {
-	        	throw new IllegalStateException("OpenAi did not response");
-	        			 
-	        }
-	        // Add usage to token tracker;
-	        if (response.usage() != null) {
+                    .bodyToMono(OpenAIResponse.class)
+                    .switchIfEmpty( //if body is empty return error
+                            Mono.error(
+                                    new IllegalStateException(
+                                            "OpenAI did not respond"
+                                    )
+                            )
+                    )
+                    .map(response -> {
+                        // Add usage
+                        if (response.usage() != null) {
 
-	            tokenTracker.addUsage(
-	                    response.usage().input_tokens(),
-	                    response.usage().output_tokens()
-	            );
-	        }
-	        return response.text();
-	        
+                            tokenTracker.addUsage(
+                                    response.usage().input_tokens(),
+                                    response.usage().output_tokens()
+                            );
+                        }
+                        return response.text();
+                    });
 		} catch (IOException error) {
-			return "There was a problem uploading file" + error;
+			// Change from string to Mono for error handling
+	        return Mono.error(
+	                new IllegalStateException(
+	                        "There was a problem reading the uploaded file",
+	                        error
+	                )
+	        ); 
 		}
 	}
 }
