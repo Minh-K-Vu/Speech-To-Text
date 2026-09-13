@@ -1,5 +1,5 @@
 package com.example.speechtotext.dto;
 
-public class OpenAIResponse {
+public record OpenAIResponse(String text){
 
 }
