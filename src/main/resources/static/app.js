@@ -35,7 +35,6 @@ startButton.addEventListener("click", async() => {
 			console.log("Audio size: ", combinedAudio.size);
 			//Update statusText
 			statusText.innerText = "Recording stopped."
-			sendAudioToServer(combinedAudio);
 			//Update button status
 			startButton.disabled = false;
 			stopButton.disabled = true;
@@ -82,7 +81,7 @@ async function sendAudioToServer(blob){
 	const formData = new FormData()
 	
 	formData.append(
-		"File",
+		"file",
 		blob,
 		"recording.webm"
 	)
@@ -90,7 +89,7 @@ async function sendAudioToServer(blob){
 	try {
 		// Post request
 		const response = await fetch(
-			"/api/texttospeech/transcribe",
+			"/api/speechtotext/transcribe",
 			{
 			    method: "POST",
 			    body: formData
