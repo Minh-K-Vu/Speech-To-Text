@@ -1,16 +1,18 @@
 package com.example.speechtotext.controller;
-import com.example.speechtotext.service.TranscriptionService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.example.speechtotext.service.TranscriptionService;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 @RestController
 //Base URL
-@RequestMapping("/api/texttospeech")
+@RequestMapping("/api/speechtotext")
 public class TranscriptionController {
 	private TranscriptionService transcriptionService;
 	// constructor dependency injection
@@ -23,8 +25,8 @@ public class TranscriptionController {
         return "Active";
     }
     //Post request to handle transcription
-    @PostMapping("/transcribe")
-    public ResponseEntity<String> transcribe(@RequestParam("file") MultipartFile file) {
+    @PostMapping(value = "/transcribe", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> transcribe(@RequestPart("file") MultipartFile file) {
     	System.out.println("Transcribe endpoint called");
 
         System.out.println(
@@ -39,10 +41,10 @@ public class TranscriptionController {
             "File size: " + file.getSize()
         );
         //Pass file to transciptionServie
-        transcriptionService.transcribe(file);
+        String transcription = transcriptionService.transcribe(file);
         
         return ResponseEntity.ok(
-            "Audio recieved" 
+            transcription
         );
         
     }
