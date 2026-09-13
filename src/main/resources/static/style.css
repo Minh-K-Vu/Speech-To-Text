@@ -1,0 +1,200 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+
+    background: #f5f5f7;
+    color: #1d1d1f;
+}
+
+
+.container {
+    width: 90%;
+    max-width: 650px;
+
+    margin: 80px auto;
+}
+
+
+header {
+    margin-bottom: 35px;
+}
+
+
+h1 {
+    margin: 0 0 8px;
+
+    font-size: 34px;
+    font-weight: 600;
+
+    letter-spacing: -0.5px;
+}
+
+
+header p {
+    margin: 0;
+
+    color: #6e6e73;
+    font-size: 16px;
+}
+
+
+.recorder {
+    padding: 25px;
+
+    background: white;
+
+    border: 1px solid #dedede;
+    border-radius: 12px;
+}
+
+
+.status-row {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 22px;
+
+    color: #515154;
+    font-size: 14px;
+}
+
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #34c759;
+}
+
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+
+button {
+    border: none;
+    border-radius: 8px;
+
+    padding: 11px 18px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+
+.start-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    background: #0071e3;
+    color: white;
+}
+
+
+.start-button:hover {
+    background: #0077ed;
+}
+
+
+.stop-button {
+    background: #e8e8ed;
+    color: #1d1d1f;
+}
+
+
+.stop-button:hover:not(:disabled) {
+    background: #dddddf;
+}
+
+
+button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+
+.record-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: white;
+}
+
+
+.result {
+    margin-top: 35px;
+}
+
+
+.result h2 {
+    margin-bottom: 12px;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+.transcription-box {
+    min-height: 170px;
+
+    padding: 18px;
+
+    background: white;
+
+    border: 1px solid #dedede;
+    border-radius: 10px;
+}
+
+
+#transcription {
+    margin: 0;
+
+    color: #515154;
+
+    font-size: 15px;
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+}
+
+
+@media (max-width: 500px) {
+
+    .container {
+        margin-top: 40px;
+    }
+
+
+    .controls {
+        flex-direction: column;
+    }
+
+
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+
+}
