@@ -1,4 +1,5 @@
 package com.example.speechtotext.service;
+import com.example.speechtotext.service.TokenTracker;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,10 +14,12 @@ import org.springframework.util.MultiValueMap;
 import com.example.speechtotext.dto.OpenAIResponse;
 
 
+
 @Service
 public class TranscriptionService {
 	
 	private RestClient restClient;
+	private TokenTracker tokenTracker;
 	
 	public TranscriptionService(
 			//Let Spring construct RestClient
@@ -24,7 +27,10 @@ public class TranscriptionService {
             //Read openai.api-key and store in apiKey
             @Value("${openai.api-key}") String apiKey,
             //Read openai.base-url and store in baseUrl
-            @Value("${openai.base-url}") String baseUrl) {
+            @Value("${openai.base-url}") String baseUrl,
+            TokenTracker tokenTracker) {
+		
+		this.tokenTracker = tokenTracker;
 		
 		//using restClientBuilder we set:
 		//baseUrl = https://api.openai.com
@@ -38,8 +44,9 @@ public class TranscriptionService {
                         "Bearer " + apiKey
                 )
                 .build();
+       
     }
-
+	
 	
 	// Get a file as input, post request to OpenAi and return OpenAi response
 	public String transcribe(MultipartFile file) {
@@ -85,8 +92,16 @@ public class TranscriptionService {
                             OpenAIResponse.class
                     );
 	        if (response == null) {
-	        	return "OpenAi did not response";
+	        	throw new IllegalStateException("OpenAi did not response");
 	        			 
+	        }
+	        // Add usage to token tracker;
+	        if (response.usage() != null) {
+
+	            tokenTracker.addUsage(
+	                    response.usage().input_tokens(),
+	                    response.usage().output_tokens()
+	            );
 	        }
 	        return response.text();
 	        
