@@ -35,9 +35,11 @@ startButton.addEventListener("click", async() => {
 			console.log("Audio size: ", combinedAudio.size);
 			//Update statusText
 			statusText.innerText = "Recording stopped."
+			sendAudioToServer(combinedAudio);
 			//Update button status
 			startButton.disabled = false;
 			stopButton.disabled = true;
+			sendAudioToServer(combinedAudio);
 		})
 		// Start recording
 		mediaRecorder.start();
@@ -66,10 +68,41 @@ stopButton.addEventListener("click", async() => {
 	) {
 
 	    mediaRecorder.stop();
-
+		
+		
 	    statusText.innerText =
 	        "Processing recording...";
 
 	    stopButton.disabled = true;
 	}
 })
+
+async function sendAudioToServer(blob){
+	// send files with http
+	const formData = new FormData()
+	
+	formData.append(
+		"File",
+		blob,
+		"recording.webm"
+	)
+	
+	try {
+		// Post request
+		const response = await fetch(
+			"/api/texttospeech/transcribe",
+			{
+			    method: "POST",
+			    body: formData
+			}
+		)
+		// Get response from java
+		const result = await response.text();
+
+		console.log("Java:", result);
+
+		transcription.innerText = result;
+	} catch (error) {
+		console.log(error);
+	}
+}
